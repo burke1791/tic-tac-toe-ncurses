@@ -5,7 +5,9 @@ typedef enum GameState {
   GS_INIT,
   GS_PLAYER_TURN,
   GS_CPU_TURN,
-  GS_END
+  GS_END_TIE,
+  GS_END_X,
+  GS_END_O
 } GameState;
 
 typedef enum UserAction {
@@ -42,10 +44,17 @@ typedef enum Piece {
   PIECE_EMPTY
 } Piece;
 
+typedef enum Color {
+  SQ_RED,
+  SQ_GREEN,
+  SQ_NONE
+} Color;
+
 typedef struct Square {
   int row;
   int col;
   Piece piece;
+  Color color;
 } Square;
 
 typedef struct Board {

@@ -13,5 +13,3 @@ $(TARGET_EXEC): ${SRC_FILES}
 
 clean:
 	rm -f $(TARGET_EXEC)
-
-# recover terminal: stty sane ^J

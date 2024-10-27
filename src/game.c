@@ -85,6 +85,79 @@ static void move_cursor(Board *b, Cursor *c, CursorDirection d) {
   c->col = b->squares[newPos]->col;
 }
 
+typedef enum WinningLine {
+  TOP_ROW,
+  MIDDLE_ROW,
+  BOTTOM_ROW,
+  LEFT_COL,
+  CENTER_COL,
+  RIGHT_COL,
+  BACKSLASH,
+  FORWARD_SLASH,
+  NO_WINNER
+} WinningLine;
+
+/**
+ * @brief returns the PIECE enum of the winner. If there's no winner,
+ *        returns PIECE_EMPTY.
+ * 
+ * @param b 
+ * @return Piece 
+ */
+static WinningLine get_winning_piece(Board *b) {
+  Piece winningPiece = PIECE_EMPTY;
+  // top row
+  if (b->squares[0]->piece == b->squares[1]->piece && b->squares[1]->piece == b->squares[2]->piece) return TOP_ROW;
+  // middle row
+  if (b->squares[3]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[5]->piece) return MIDDLE_ROW;
+  // bottom row
+  if (b->squares[6]->piece == b->squares[7]->piece && b->squares[7]->piece == b->squares[8]->piece) return BOTTOM_ROW;
+
+  // left col
+  if (b->squares[0]->piece == b->squares[3]->piece && b->squares[3]->piece == b->squares[6]->piece) return LEFT_COL;
+  // center col
+  if (b->squares[1]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[7]->piece) return CENTER_COL;
+  // right col
+  if (b->squares[2]->piece == b->squares[5]->piece && b->squares[5]->piece == b->squares[8]->piece) return RIGHT_COL;
+
+  // back-slash diagonal
+  if (b->squares[0]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[8]->piece) return BACKSLASH;
+  // forward-slash diagonal
+  if (b->squares[6]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[2]->piece) return FORWARD_SLASH;
+
+  return NO_WINNER;
+}
+
+/**
+ * @brief checks if the board is full
+ * 
+ * @param b 
+ * @return true 
+ * @return false 
+ */
+static bool is_board_full(Board *b) {
+  for (int i = 0; i < 9; i++) {
+    if (b->squares[i]->piece == PIECE_EMPTY) return false;
+  }
+
+  return true;
+}
+
+/**
+ * @brief checks the board for an ending condition and updates the
+ *        game state accordingly
+ * 
+ * @param g 
+ */
+static void update_game_state(Game *g) {
+  Piece winner = get_winning_piece(g->board);
+
+  switch (winner) {
+    case PIECE_X:
+
+  }
+}
+
 void play(Game *g) {
   // temp code to kick off the game
   g->state = GS_PLAYER_TURN;
@@ -115,6 +188,8 @@ void play(Game *g) {
         move_cursor(g->board, g->cursor, CUR_RIGHT);
         break;
     }
+
+    
 
     refresh_display(g);
 

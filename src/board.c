@@ -10,6 +10,7 @@ Board *new_board() {
   for (int i = 0; i < 9; i++) {
     b->squares[i] = malloc(sizeof(Square));
     b->squares[i]->piece = PIECE_EMPTY;
+    b->squares[i]->color = SQ_NONE;
   }
 
   // top-left

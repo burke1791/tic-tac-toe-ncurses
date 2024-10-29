@@ -3,6 +3,7 @@
 
 #include "game.h"
 #include "display.h"
+#include "ai.h"
 
 static Cursor *new_cursor() {
   Cursor *c = malloc(sizeof(Cursor));
@@ -85,26 +86,7 @@ static void move_cursor(Board *b, Cursor *c, CursorDirection d) {
   c->col = b->squares[newPos]->col;
 }
 
-typedef enum WinningLine {
-  TOP_ROW,
-  MIDDLE_ROW,
-  BOTTOM_ROW,
-  LEFT_COL,
-  CENTER_COL,
-  RIGHT_COL,
-  BACKSLASH,
-  FORWARD_SLASH,
-  NO_WINNER
-} WinningLine;
-
-/**
- * @brief returns the PIECE enum of the winner. If there's no winner,
- *        returns PIECE_EMPTY.
- * 
- * @param b 
- * @return Piece 
- */
-static WinningLine get_winning_piece(Board *b) {
+static Line get_winning_line(Board *b) {
   Piece winningPiece = PIECE_EMPTY;
   // top row
   if (b->squares[0]->piece == b->squares[1]->piece && b->squares[1]->piece == b->squares[2]->piece) return TOP_ROW;
@@ -128,6 +110,76 @@ static WinningLine get_winning_piece(Board *b) {
   return NO_WINNER;
 }
 
+static Piece get_winning_piece(Board *b, Line wl) {
+  Piece winner;
+
+  switch (wl) {
+    case MIDDLE_ROW:
+    case CENTER_COL:
+    case BACKSLASH:
+    case FORWARD_SLASH:
+      // these four lines go through the center square
+      winner = b->squares[4]->piece;
+      break;
+    case TOP_ROW:
+    case LEFT_COL:
+      winner = b->squares[0]->piece;
+      break;
+    case BOTTOM_ROW:
+    case RIGHT_COL:
+      winner = b->squares[8]->piece;
+      break;
+    default:
+      winner = PIECE_EMPTY;
+  }
+
+  return winner;
+}
+
+static SquareColor get_winning_line_color(Board *b, Line wl) {
+  Piece winner = get_winning_piece(b, wl);
+  SquareColor color = SQ_NONE;
+
+  if (winner == PIECE_X) {
+    color = SQ_GREEN;
+  } else {
+    color = SQ_RED;
+  }
+
+  return color;
+}
+
+static void set_line_color(Board *b, Line wl) {
+  SquareColor c = get_winning_line_color(b, wl);
+
+  switch (wl) {
+    case TOP_ROW:
+      set_top_row_color(b, c);
+      break;
+    case MIDDLE_ROW:
+      set_middle_row_color(b, c);
+      break;
+    case BOTTOM_ROW:
+      set_bottom_row_color(b, c);
+      break;
+    case LEFT_COL:
+      set_left_col_color(b, c);
+      break;
+    case CENTER_COL:
+      set_center_col_color(b, c);
+      break;
+    case RIGHT_COL:
+      set_right_col_color(b, c);
+      break;
+    case BACKSLASH:
+      set_backslash_color(b, c);
+      break;
+    case FORWARD_SLASH:
+      set_forwardslash_color(b, c);
+      break;
+  }
+}
+
 /**
  * @brief checks if the board is full
  * 
@@ -143,6 +195,22 @@ static bool is_board_full(Board *b) {
   return true;
 }
 
+static void set_game_state_turn(Game *g) {
+  int numX = 0;
+  int numO = 0;
+
+  for (int i = 0; i < 9; i++) {
+    if (g->board->squares[i]->piece == PIECE_X) numX++;
+    if (g->board->squares[i]->piece == PIECE_O) numO++;
+  }
+
+  if (numO >= numX) {
+    g->state = GS_PLAYER_TURN;
+  } else {
+    g->state = GS_CPU_TURN;
+  }
+}
+
 /**
  * @brief checks the board for an ending condition and updates the
  *        game state accordingly
@@ -150,17 +218,31 @@ static bool is_board_full(Board *b) {
  * @param g 
  */
 static void update_game_state(Game *g) {
-  Piece winner = get_winning_piece(g->board);
+  Line wl = get_winning_line(g->board);
+  Piece winner = get_winning_piece(g->board, wl);
 
   switch (winner) {
     case PIECE_X:
-
+      g->state = GS_END_X;
+      set_line_color(g->board, wl);
+      break;
+    case PIECE_O:
+      g->state = GS_END_O;
+      set_line_color(g->board, wl);
+      break;
+    case PIECE_EMPTY:
+      if (is_board_full(g->board)) {
+        g->state = GS_END_TIE;
+      } else {
+        set_game_state_turn(g);
+      }
+      break;
   }
 }
 
 void play(Game *g) {
-  // temp code to kick off the game
-  g->state = GS_PLAYER_TURN;
+  update_game_state(g);
+  refresh_display(g);
 
   int input;
 
@@ -189,9 +271,17 @@ void play(Game *g) {
         break;
     }
 
-    
-
+    update_game_state(g);
     refresh_display(g);
+
+    // AI logic
+    if (g->state == GS_CPU_TURN) {
+      int cpuMove = next_move(g);
+      place_o(g->board, cpuMove);
+
+      update_game_state(g);
+      refresh_display(g);
+    }
 
     /*
       check for an ending condition

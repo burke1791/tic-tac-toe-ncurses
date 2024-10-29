@@ -44,17 +44,29 @@ typedef enum Piece {
   PIECE_EMPTY
 } Piece;
 
-typedef enum Color {
+typedef enum SquareColor {
   SQ_RED,
   SQ_GREEN,
   SQ_NONE
-} Color;
+} SquareColor;
+
+typedef enum Line {
+  TOP_ROW,
+  MIDDLE_ROW,
+  BOTTOM_ROW,
+  LEFT_COL,
+  CENTER_COL,
+  RIGHT_COL,
+  BACKSLASH,
+  FORWARD_SLASH,
+  NO_WINNER
+} Line;
 
 typedef struct Square {
   int row;
   int col;
   Piece piece;
-  Color color;
+  SquareColor color;
 } Square;
 
 typedef struct Board {
@@ -81,5 +93,15 @@ int get_board_pos_from_cursor(Board *b, Cursor *c);
 
 /* the main game loop */
 void play(Game *g);
+
+// set line colors
+void set_top_row_color(Board *b, SquareColor c);
+void set_middle_row_color(Board *b, SquareColor c);
+void set_bottom_row_color(Board *b, SquareColor c);
+void set_left_col_color(Board *b, SquareColor c);
+void set_center_col_color(Board *b, SquareColor c);
+void set_right_col_color(Board *b, SquareColor c);
+void set_backslash_color(Board *b, SquareColor c);
+void set_forwardslash_color(Board *b, SquareColor c);
 
 #endif /* GAME_H */

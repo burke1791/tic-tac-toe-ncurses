@@ -85,3 +85,51 @@ int get_board_pos_from_cursor(Board *b, Cursor *c) {
 
   return -1;
 }
+
+void set_top_row_color(Board *b, SquareColor c) {
+  b->squares[0]->color = c;
+  b->squares[1]->color = c;
+  b->squares[2]->color = c;
+}
+
+void set_middle_row_color(Board *b, SquareColor c) {
+  b->squares[3]->color = c;
+  b->squares[4]->color = c;
+  b->squares[5]->color = c;
+}
+
+void set_bottom_row_color(Board *b, SquareColor c) {
+  b->squares[6]->color = c;
+  b->squares[7]->color = c;
+  b->squares[8]->color = c;
+}
+
+void set_left_col_color(Board *b, SquareColor c) {
+  b->squares[0]->color = c;
+  b->squares[3]->color = c;
+  b->squares[6]->color = c;
+}
+
+void set_center_col_color(Board *b, SquareColor c) {
+  b->squares[1]->color = c;
+  b->squares[4]->color = c;
+  b->squares[7]->color = c;
+}
+
+void set_right_col_color(Board *b, SquareColor c) {
+  b->squares[2]->color = c;
+  b->squares[5]->color = c;
+  b->squares[8]->color = c;
+}
+
+void set_backslash_color(Board *b, SquareColor c) {
+  b->squares[0]->color = c;
+  b->squares[4]->color = c;
+  b->squares[8]->color = c;
+}
+
+void set_forwardslash_color(Board *b, SquareColor c) {
+  b->squares[6]->color = c;
+  b->squares[4]->color = c;
+  b->squares[2]->color = c;
+}

@@ -4,6 +4,7 @@ CFLAGS = -I./include -lncursesw -fsanitize=address -fsanitize=undefined -static-
 TARGET_EXEC = ttt
 
 SRC_FILES = main.c \
+						src/ai.c \
 						src/board.c \
 						src/display.c \
 						src/game.c

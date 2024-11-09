@@ -11,9 +11,9 @@ typedef struct State {
 } State;
 
 typedef struct Node {
-  Node *parent;
+  void *parent;
   State *state;
-  Node **children;
+  void **children;
 } Node;
 
 typedef struct Tree {

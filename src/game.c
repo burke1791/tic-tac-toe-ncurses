@@ -5,21 +5,35 @@
 #include "display.h"
 #include "ai.h"
 
+Location *new_location(int row, int col) {
+  Location *l = malloc(sizeof(Location));
+  l->row = row;
+  l->col = col;
+  
+  return l;
+}
+
+void destroy_location(Location *l) {
+  free(l);
+}
+
 static Cursor *new_cursor() {
   Cursor *c = malloc(sizeof(Cursor));
-  c->row = BOARD_ORIGIN_ROW;
-  c->col = BOARD_ORIGIN_COL + 1;
+  c->loc = new_location(BOARD_ORIGIN_ROW, BOARD_ORIGIN_COL + 1);
+  c->ctx = CURCTX_BOARD;
 
   return c;
 }
 
 static void destroy_cursor(Cursor *c) {
+  destroy_location(c->loc);
   free(c);
 }
 
 Game *new_game() {
   Game *g = malloc(sizeof(Game));
   g->state = GS_INIT;
+  g->menu = new_menu();
   g->board = new_board();
   g->cursor = new_cursor();
 
@@ -27,6 +41,7 @@ Game *new_game() {
 }
 
 void destroy_game(Game *g) {
+  destroy_menu(g->menu);
   destroy_board(g->board);
   destroy_cursor(g->cursor);
   free(g);
@@ -46,7 +61,7 @@ static UserAction parse_user_action(int c) {
     case KEY_RIGHT:
       return UA_CURSOR_RIGHT;
     case 32:
-      return UA_PLACE_PIECE;
+      return UA_CURSOR_ACTION;
     default:
       return UA_NONE;
   }
@@ -58,8 +73,36 @@ static void user_place_piece(Board *b, Cursor *c) {
   place_x(b, pos);
 }
 
-static void move_cursor(Board *b, Cursor *c, CursorDirection d) {
-  int pos = get_board_pos_from_cursor(b, c);
+static void user_cursor_action(Game *g) {
+  int boardPos = get_board_pos_from_cursor(g->board, g->cursor);
+
+  if (boardPos >= 0) {
+    user_place_piece(g->board, g->cursor);
+  }
+
+  int menuPos = get_menu_pos_from_cursor(g->menu, g->cursor);
+
+  if (menuPos >= 0) {
+    // take menu action
+  }
+}
+
+static void move_cursor_to_menu(Cursor *c, Menu *m) {
+  c->ctx = CURCTX_MENU;
+  c->loc->row = m->items[0]->loc->row;
+  // column doesn't matter in the menu
+}
+
+static void move_cursor_to_board(Cursor *c, Board* b) {
+  c->ctx = CURCTX_BOARD;
+
+  // move the cursor to the bottom left square
+  c->loc->row = b->squares[6]->loc->row;
+  c->loc->col = b->squares[6]->loc->col;
+}
+
+static void move_cursor_from_board(Game *g, CursorDirection d) {
+  int pos = get_board_pos_from_cursor(g->board, g->cursor);
   int newPos;
 
   switch (d) {
@@ -80,10 +123,53 @@ static void move_cursor(Board *b, Cursor *c, CursorDirection d) {
       newPos = pos;
   }
 
-  if (newPos < 0 || newPos > 8) newPos = pos;
+  if (newPos > 8) {
+    move_cursor_to_menu(g->cursor, g->menu);
+    return;
+  } else if (newPos < 0 || newPos > 8) {
+    newPos = pos;
+  }
 
-  c->row = b->squares[newPos]->row;
-  c->col = b->squares[newPos]->col;
+  g->cursor->loc->row = g->board->squares[newPos]->loc->row;
+  g->cursor->loc->col = g->board->squares[newPos]->loc->col;
+}
+
+static void move_cursor_from_menu(Game *g, CursorDirection d) {
+  int pos = get_menu_pos_from_cursor(g->menu, g->cursor);
+  int newPos;
+
+  switch (d) {
+    case CUR_UP:
+      newPos = pos - 1;
+      break;
+    case CUR_DOWN:
+      newPos = pos + 1;
+      break;
+    default:
+      newPos = pos;
+  }
+
+  if (newPos < 0) {
+    move_cursor_to_board(g->cursor, g->board);
+    return;
+  } else if (newPos > 1) {
+    newPos = 1;
+  }
+
+  g->cursor->loc->row = g->menu->items[newPos]->loc->row;
+}
+
+static void move_cursor(Game *g, CursorDirection d) {
+  CursorCtx ctx = g->cursor->ctx;
+
+  switch (ctx) {
+    case CURCTX_BOARD:
+      move_cursor_from_board(g, d);
+      break;
+    case CURCTX_MENU:
+      move_cursor_from_menu(g, d);
+      break;
+  }
 }
 
 static Line get_winning_line(Board *b) {
@@ -254,20 +340,20 @@ void play(Game *g) {
         return;
       case UA_NONE:
         continue;
-      case UA_PLACE_PIECE:
-        user_place_piece(g->board, g->cursor);
+      case UA_CURSOR_ACTION:
+        user_cursor_action(g);
         break;
       case UA_CURSOR_UP:
-        move_cursor(g->board, g->cursor, CUR_UP);
+        move_cursor(g, CUR_UP);
         break;
       case UA_CURSOR_DOWN:
-        move_cursor(g->board, g->cursor, CUR_DOWN);
+        move_cursor(g, CUR_DOWN);
         break;
       case UA_CURSOR_LEFT:
-        move_cursor(g->board, g->cursor, CUR_LEFT);
+        move_cursor(g, CUR_LEFT);
         break;
       case UA_CURSOR_RIGHT:
-        move_cursor(g->board, g->cursor, CUR_RIGHT);
+        move_cursor(g, CUR_RIGHT);
         break;
     }
 

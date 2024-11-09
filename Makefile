@@ -7,7 +7,8 @@ SRC_FILES = main.c \
 						src/ai.c \
 						src/board.c \
 						src/display.c \
-						src/game.c
+						src/game.c \
+						src/menu.c
 
 $(TARGET_EXEC): ${SRC_FILES}
 	${CC} ${CFLAGS} -o $@ $?

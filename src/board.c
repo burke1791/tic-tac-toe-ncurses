@@ -9,51 +9,53 @@ Board *new_board() {
 
   for (int i = 0; i < 9; i++) {
     b->squares[i] = malloc(sizeof(Square));
+    b->squares[i]->loc = new_location(0, 0);
     b->squares[i]->piece = PIECE_EMPTY;
     b->squares[i]->color = SQ_NONE;
   }
 
   // top-left
-  b->squares[0]->row = BOARD_ORIGIN_ROW;
-  b->squares[0]->col = BOARD_ORIGIN_COL + 1;
+  b->squares[0]->loc->row = BOARD_ORIGIN_ROW;
+  b->squares[0]->loc->col = BOARD_ORIGIN_COL + 1;
 
   // top-center
-  b->squares[1]->row = BOARD_ORIGIN_ROW;
-  b->squares[1]->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
+  b->squares[1]->loc->row = BOARD_ORIGIN_ROW;
+  b->squares[1]->loc->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
 
   // top-right
-  b->squares[2]->row = BOARD_ORIGIN_ROW;
-  b->squares[2]->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
+  b->squares[2]->loc->row = BOARD_ORIGIN_ROW;
+  b->squares[2]->loc->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
 
   // middle-left
-  b->squares[3]->row = BOARD_ORIGIN_ROW + 2;
-  b->squares[3]->col = BOARD_ORIGIN_COL + 1;
+  b->squares[3]->loc->row = BOARD_ORIGIN_ROW + 2;
+  b->squares[3]->loc->col = BOARD_ORIGIN_COL + 1;
 
   // middle-center
-  b->squares[4]->row = BOARD_ORIGIN_ROW + 2;
-  b->squares[4]->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
+  b->squares[4]->loc->row = BOARD_ORIGIN_ROW + 2;
+  b->squares[4]->loc->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
 
   // middle-right
-  b->squares[5]->row = BOARD_ORIGIN_ROW + 2;
-  b->squares[5]->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
+  b->squares[5]->loc->row = BOARD_ORIGIN_ROW + 2;
+  b->squares[5]->loc->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
 
   // bottom-left
-  b->squares[6]->row = BOARD_ORIGIN_ROW + 4;
-  b->squares[6]->col = BOARD_ORIGIN_COL + 1;
+  b->squares[6]->loc->row = BOARD_ORIGIN_ROW + 4;
+  b->squares[6]->loc->col = BOARD_ORIGIN_COL + 1;
 
   // bottom-center
-  b->squares[7]->row = BOARD_ORIGIN_ROW + 4;
-  b->squares[7]->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
+  b->squares[7]->loc->row = BOARD_ORIGIN_ROW + 4;
+  b->squares[7]->loc->col = BOARD_ORIGIN_COL + 2 + BOARD_COL_GAP;
 
   // bottom-right
-  b->squares[8]->row = BOARD_ORIGIN_ROW + 4;
-  b->squares[8]->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
+  b->squares[8]->loc->row = BOARD_ORIGIN_ROW + 4;
+  b->squares[8]->loc->col = BOARD_ORIGIN_COL + 3 + (BOARD_COL_GAP * 2);
 
   return b;
 }
 
 void destroy_board(Board *b) {
   for (int i = 0; i < 9; i++) {
+    destroy_location(b->squares[i]->loc);
     free(b->squares[i]);
   }
   free(b);
@@ -80,7 +82,7 @@ int get_board_pos_from_cursor(Board *b, Cursor *c) {
 
   for (int i = 0; i < 9; i++) {
     Square *s = b->squares[i];
-    if (s->row == c->row && s->col == c->col) return i;
+    if (s->loc->row == c->loc->row && s->loc->col == c->loc->col) return i;
   }
 
   return -1;

@@ -15,7 +15,7 @@ typedef enum UserAction {
   UA_CURSOR_DOWN,
   UA_CURSOR_LEFT,
   UA_CURSOR_RIGHT,
-  UA_PLACE_PIECE,
+  UA_CURSOR_ACTION,
   UA_QUIT,
   UA_NONE
 } UserAction;
@@ -27,9 +27,19 @@ typedef enum CursorDirection {
   CUR_RIGHT
 } CursorDirection;
 
-typedef struct Cursor {
+typedef struct Location {
   int row;
   int col;
+} Location;
+
+typedef enum CursorCtx {
+  CURCTX_BOARD,
+  CURCTX_MENU
+} CursorCtx;
+
+typedef struct Cursor {
+  CursorCtx ctx;
+  Location *loc;
 } Cursor;
 
 typedef enum BoardPlacementResult {
@@ -63,8 +73,7 @@ typedef enum Line {
 } Line;
 
 typedef struct Square {
-  int row;
-  int col;
+  Location *loc;
   Piece piece;
   SquareColor color;
 } Square;
@@ -73,18 +82,39 @@ typedef struct Board {
   Square *squares[9];
 } Board;
 
+typedef enum MenuAction {
+  MENU_NEW_GAME,
+  MENU_QUIT
+} MenuAction;
+
+typedef struct MenuItem {
+  MenuAction menuAction;
+  Location *loc;
+} MenuItem;
+
+typedef struct Menu {
+  MenuItem *items[2];
+} Menu;
+
 typedef struct Game {
   GameState state;
+  Menu *menu;
   Board *board;
   Cursor *cursor;
 } Game;
 
+Location *new_location(int row, int col);
+void destroy_location(Location *l);
 
 Game *new_game();
 void destroy_game(Game *g);
 
 Board *new_board();
 void destroy_board(Board *b);
+
+Menu *new_menu();
+void destroy_menu(Menu *m);
+int get_menu_pos_from_cursor(Menu *m, Cursor *c);
 
 BoardPlacementResult place_x(Board *b, int pos);
 BoardPlacementResult place_o(Board *b, int pos);

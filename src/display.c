@@ -9,6 +9,7 @@
 
 static void paint_board(Board *b, Cursor *c);
 static void paint_header(Game *g);
+static void paint_menu(Game *g);
 
 void init_display() {
   initscr();
@@ -24,6 +25,7 @@ void init_display() {
 void refresh_display(Game *g) {
   paint_header(g);
   paint_board(g->board, g->cursor);
+  paint_menu(g);
 
   refresh();
 }
@@ -44,7 +46,7 @@ static char get_piece_char(Square *s) {
 }
 
 static bool is_cursor_on_square(Cursor *c, Square *s) {
-  return c->row == s->row && c->col == s->col;
+  return c->loc->row == s->loc->row && c->loc->col == s->loc->col;
 }
 
 static void paint_board(Board *b, Cursor *c) {
@@ -75,12 +77,12 @@ static void paint_board(Board *b, Cursor *c) {
     }
 
     if (isCursor && s->piece == PIECE_EMPTY) {
-      mvprintw(s->row, s->col, "%s", CURSOR_SQUARE);
+      mvprintw(s->loc->row, s->loc->col, "%s", CURSOR_SQUARE);
     } else if (isCursor && s->piece != PIECE_EMPTY) {
-      move(s->row, s->col);
+      move(s->loc->row, s->loc->col);
       addch(p | A_UNDERLINE);
     } else {
-      move(s->row, s->col);
+      move(s->loc->row, s->loc->col);
       addch(p);
     }
 
@@ -100,10 +102,10 @@ static void paint_header(Game *g) {
 
   switch (g->state) {
     case GS_PLAYER_TURN:
-      mvprintw(row, col, "Turn: you");
+      mvprintw(row, col, "Your turn");
       break;
     case GS_CPU_TURN:
-      mvprintw(row, col, "Turn: cpu");
+      mvprintw(row, col, "CPU turn");
       break;
     case GS_END_TIE:
       mvprintw(row, col, "Result: tie");
@@ -114,5 +116,28 @@ static void paint_header(Game *g) {
     case GS_END_O:
       mvprintw(row, col, "Result: cpu wins :(");
       break;
+  }
+}
+
+static void paint_menu(Game *g) {
+  Menu *m = g->menu;
+  int row = m->items[0]->loc->row;
+  int col = m->items[0]->loc->col;
+
+  move(row, col);
+  clrtoeol();
+  mvprintw(row, col + MENU_PADDING, "Start new game");
+
+  row = m->items[1]->loc->row;
+  col = m->items[1]->loc->col;
+  move(row, col);
+  clrtoeol();
+  mvprintw(row, col + MENU_PADDING, "Quit");
+
+  int pos = get_menu_pos_from_cursor(g->menu, g->cursor);
+
+  if (pos >= 0) {
+    move(m->items[pos]->loc->row, m->items[pos]->loc->col);
+    addch('>');
   }
 }

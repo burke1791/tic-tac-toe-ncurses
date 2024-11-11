@@ -73,19 +73,31 @@ void reset_board(Board *b) {
 }
 
 static bool validate_new_piece(Board *b, int pos, Piece p) {
+  // is the requested square occupied?
+  if (b->squares[pos]->piece != PIECE_EMPTY) return false;
+
+  int numX = 0;
+  int numO = 0;
+
+  for (int i = 0; i < 9; i++) {
+    if (b->squares[i]->piece == PIECE_X) numX++;
+    if (b->squares[i]->piece == PIECE_O) numO++;
+  }
+
+  // X's and O's must be equivalent
+  if (p == PIECE_X && numX != numO) return false;
+  
+  // X's must be one higher than O's
+  if (p == PIECE_O && (numX - numO) != 1) return false;
+
   return true;
 }
 
-static BoardPlacementResult place_piece(Board *b, int pos, Piece p) {
+BoardPlacementResult place_piece(Board *b, int pos, Piece p) {
+  if (!validate_new_piece(b, pos, p)) return BPR_INVALID;
+
   b->squares[pos]->piece = p;
-}
-
-BoardPlacementResult place_x(Board *b, int pos) {
-  place_piece(b, pos, PIECE_X);
-}
-
-BoardPlacementResult place_o(Board *b, int pos) {
-  place_piece(b, pos, PIECE_O);
+  return BPR_OK;
 }
 
 int get_board_pos_from_cursor(Board *b, Cursor *c) {

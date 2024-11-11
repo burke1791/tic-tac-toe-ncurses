@@ -129,8 +129,7 @@ Menu *new_menu();
 void destroy_menu(Menu *m);
 int get_menu_pos_from_cursor(Menu *m, Cursor *c);
 
-BoardPlacementResult place_x(Board *b, int pos);
-BoardPlacementResult place_o(Board *b, int pos);
+BoardPlacementResult place_piece(Board *b, int pos, Piece p);
 
 int get_board_pos_from_cursor(Board *b, Cursor *c);
 

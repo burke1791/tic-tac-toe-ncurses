@@ -127,8 +127,9 @@ static UserInput parse_user_input(int c) {
   }
 }
 
-static void user_place_piece(Board *b, int pos) {
-  place_x(b, pos);
+static void user_place_piece(Board *b, Cursor *c) {
+  int pos = get_board_pos_from_cursor(b, c);
+  place_piece(b, pos, PIECE_X);
 }
 
 static void move_cursor_to_menu(Cursor *c, Menu *m) {
@@ -386,8 +387,7 @@ void play(Game *g) {
       case UA_NONE:
         continue;
       case UA_PLACE_PIECE:
-        int pos = get_board_pos_from_cursor(g->board, g->cursor);
-        place_x(g->board, pos);
+        user_place_piece(g->board, g->cursor);
         break;
       case UA_NEW_GAME:
         reset_board(g->board);
@@ -412,7 +412,7 @@ void play(Game *g) {
     // AI logic
     if (g->state == GS_CPU_TURN) {
       int cpuMove = next_move(g);
-      place_o(g->board, cpuMove);
+      place_piece(g->board, cpuMove, PIECE_O);
 
       update_game_state(g);
       refresh_display(g);

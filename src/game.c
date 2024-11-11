@@ -47,44 +47,88 @@ void destroy_game(Game *g) {
   free(g);
 }
 
-static UserAction parse_user_action(int c) {
+static UserAction get_menu_action_from_cursor(Menu *m, Cursor *c) {
+  int menuPos = get_menu_pos_from_cursor(m, c);
+
+  switch (m->items[menuPos]->menuAction) {
+    case MENU_NEW_GAME:
+      return UA_NEW_GAME;
+    case MENU_QUIT:
+      return UA_QUIT;
+  }
+
+  return UA_NONE;
+}
+
+/**
+ * @brief The user selected the action button. This function determines
+ * what action the user wishes to take
+ * 
+ * @param g 
+ * @return UserAction 
+ */
+static UserAction determine_user_cursor_action(Game *g) {
+  switch (g->cursor->ctx) {
+    case CURCTX_BOARD:
+      return UA_PLACE_PIECE;
+    case CURCTX_MENU:
+      return get_menu_action_from_cursor(g->menu, g->cursor);
+  }
+
+  return UA_NONE;
+}
+
+/**
+ * @brief determines which action the user wants to take based on
+ * the game's current state, the cursor context, and the user's input
+ * 
+ * @param g 
+ * @param in 
+ * @return UserAction 
+ */
+static UserAction get_user_action(Game *g, UserInput in) {
+  switch (in) {
+    case UI_NONE:
+      return UA_NONE;
+    case UI_Q:
+      return UA_QUIT;
+    case UI_UP:
+      return UA_CURSOR_UP;
+    case UI_DOWN:
+      return UA_CURSOR_DOWN;
+    case UI_LEFT:
+      return UA_CURSOR_LEFT;
+    case UI_RIGHT:
+      return UA_CURSOR_RIGHT;
+    case UI_ENTER:
+      return determine_user_cursor_action(g);
+  }
+
+  return UA_NONE;
+}
+
+static UserInput parse_user_input(int c) {
   switch (c) {
     case 81:
     case 113:
-      return UA_QUIT;
+      return UI_Q;
     case KEY_UP:
-      return UA_CURSOR_UP;
+      return UI_UP;
     case KEY_DOWN:
-      return UA_CURSOR_DOWN;
+      return UI_DOWN;
     case KEY_LEFT:
-      return UA_CURSOR_LEFT;
+      return UI_LEFT;
     case KEY_RIGHT:
-      return UA_CURSOR_RIGHT;
+      return UI_RIGHT;
     case 32:
-      return UA_CURSOR_ACTION;
+      return UI_ENTER;
     default:
-      return UA_NONE;
+      return UI_NONE;
   }
 }
 
-static void user_place_piece(Board *b, Cursor *c) {
-  int pos = get_board_pos_from_cursor(b, c);
-
+static void user_place_piece(Board *b, int pos) {
   place_x(b, pos);
-}
-
-static void user_cursor_action(Game *g) {
-  int boardPos = get_board_pos_from_cursor(g->board, g->cursor);
-
-  if (boardPos >= 0) {
-    user_place_piece(g->board, g->cursor);
-  }
-
-  int menuPos = get_menu_pos_from_cursor(g->menu, g->cursor);
-
-  if (menuPos >= 0) {
-    // take menu action
-  }
 }
 
 static void move_cursor_to_menu(Cursor *c, Menu *m) {
@@ -335,13 +379,18 @@ void play(Game *g) {
   while (true) {
     input = getch();
 
-    switch (parse_user_action(input)) {
+    UserInput in = parse_user_input(input);
+    switch (get_user_action(g, in)) {
       case UA_QUIT:
         return;
       case UA_NONE:
         continue;
-      case UA_CURSOR_ACTION:
-        user_cursor_action(g);
+      case UA_PLACE_PIECE:
+        int pos = get_board_pos_from_cursor(g->board, g->cursor);
+        place_x(g->board, pos);
+        break;
+      case UA_NEW_GAME:
+        reset_board(g->board);
         break;
       case UA_CURSOR_UP:
         move_cursor(g, CUR_UP);

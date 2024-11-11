@@ -61,6 +61,17 @@ void destroy_board(Board *b) {
   free(b);
 }
 
+static void reset_square(Square *s) {
+  s->color = SQ_NONE;
+  s->piece = PIECE_EMPTY;
+}
+
+void reset_board(Board *b) {
+  for (int i = 0; i < 9; i++) {
+    reset_square(b->squares[i]);
+  }
+}
+
 static bool validate_new_piece(Board *b, int pos, Piece p) {
   return true;
 }

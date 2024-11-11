@@ -7,15 +7,27 @@ typedef enum GameState {
   GS_CPU_TURN,
   GS_END_TIE,
   GS_END_X,
-  GS_END_O
+  GS_END_O,
+  GS_QUIT
 } GameState;
+
+typedef enum UserInput {
+  UI_UP,
+  UI_DOWN,
+  UI_LEFT,
+  UI_RIGHT,
+  UI_ENTER,
+  UI_Q,
+  UI_NONE
+} UserInput;
 
 typedef enum UserAction {
   UA_CURSOR_UP,
   UA_CURSOR_DOWN,
   UA_CURSOR_LEFT,
   UA_CURSOR_RIGHT,
-  UA_CURSOR_ACTION,
+  UA_PLACE_PIECE,
+  UA_NEW_GAME,
   UA_QUIT,
   UA_NONE
 } UserAction;
@@ -111,6 +123,7 @@ void destroy_game(Game *g);
 
 Board *new_board();
 void destroy_board(Board *b);
+void reset_board(Board *b);
 
 Menu *new_menu();
 void destroy_menu(Menu *m);

@@ -19,4 +19,7 @@ void init_display();
 void refresh_display(Game *g);
 void kill_display();
 
+// non-ncurses display functions
+void print_board(Board *b, const char *msg);
+
 #endif /* DISPLAY_H */

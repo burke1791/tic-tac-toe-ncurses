@@ -123,6 +123,7 @@ void destroy_game(Game *g);
 
 Board *new_board();
 void destroy_board(Board *b);
+void reset_square(Square *s);
 void reset_board(Board *b);
 
 Menu *new_menu();
@@ -132,9 +133,18 @@ int get_menu_pos_from_cursor(Menu *m, Cursor *c);
 BoardPlacementResult place_piece(Board *b, int pos, Piece p);
 
 int get_board_pos_from_cursor(Board *b, Cursor *c);
+int num_empty_squares(Board *b);
+char get_piece_char_from_square(Square *s);
+char get_piece_char(Piece p);
 
 /* the main game loop */
 void play(Game *g);
+void play_noui(Game *g);
+
+Piece get_next_turn(Board *b);
+Line get_winning_line(Board *b);
+char *get_line_text(Line l);
+Piece get_winning_piece(Board *b, Line wl);
 
 // set line colors
 void set_top_row_color(Board *b, SquareColor c);

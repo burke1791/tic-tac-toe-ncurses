@@ -217,31 +217,69 @@ static void move_cursor(Game *g, CursorDirection d) {
   }
 }
 
-static Line get_winning_line(Board *b) {
-  Piece winningPiece = PIECE_EMPTY;
+Piece get_next_turn(Board *b) {
+  int numX = 0;
+  int numO = 0;
+
+  for (int i = 0; i < 9; i++) {
+    if (b->squares[i]->piece == PIECE_X) numX++;
+    if (b->squares[i]->piece == PIECE_O) numO++;
+  }
+
+  if (numO >= numX) {
+    return PIECE_X;
+  } else {
+    return PIECE_O;
+  }
+}
+
+Line get_winning_line(Board *b) {
   // top row
-  if (b->squares[0]->piece == b->squares[1]->piece && b->squares[1]->piece == b->squares[2]->piece) return TOP_ROW;
+  if (b->squares[0]->piece != PIECE_EMPTY && b->squares[0]->piece == b->squares[1]->piece && b->squares[1]->piece == b->squares[2]->piece) return TOP_ROW;
   // middle row
-  if (b->squares[3]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[5]->piece) return MIDDLE_ROW;
+  if (b->squares[3]->piece != PIECE_EMPTY && b->squares[3]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[5]->piece) return MIDDLE_ROW;
   // bottom row
-  if (b->squares[6]->piece == b->squares[7]->piece && b->squares[7]->piece == b->squares[8]->piece) return BOTTOM_ROW;
+  if (b->squares[6]->piece != PIECE_EMPTY && b->squares[6]->piece == b->squares[7]->piece && b->squares[7]->piece == b->squares[8]->piece) return BOTTOM_ROW;
 
   // left col
-  if (b->squares[0]->piece == b->squares[3]->piece && b->squares[3]->piece == b->squares[6]->piece) return LEFT_COL;
+  if (b->squares[0]->piece != PIECE_EMPTY && b->squares[0]->piece == b->squares[3]->piece && b->squares[3]->piece == b->squares[6]->piece) return LEFT_COL;
   // center col
-  if (b->squares[1]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[7]->piece) return CENTER_COL;
+  if (b->squares[1]->piece != PIECE_EMPTY && b->squares[1]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[7]->piece) return CENTER_COL;
   // right col
-  if (b->squares[2]->piece == b->squares[5]->piece && b->squares[5]->piece == b->squares[8]->piece) return RIGHT_COL;
+  if (b->squares[2]->piece != PIECE_EMPTY && b->squares[2]->piece == b->squares[5]->piece && b->squares[5]->piece == b->squares[8]->piece) return RIGHT_COL;
 
   // back-slash diagonal
-  if (b->squares[0]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[8]->piece) return BACKSLASH;
+  if (b->squares[0]->piece != PIECE_EMPTY && b->squares[0]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[8]->piece) return BACKSLASH;
   // forward-slash diagonal
-  if (b->squares[6]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[2]->piece) return FORWARD_SLASH;
+  if (b->squares[6]->piece != PIECE_EMPTY && b->squares[6]->piece == b->squares[4]->piece && b->squares[4]->piece == b->squares[2]->piece) return FORWARD_SLASH;
 
   return NO_WINNER;
 }
 
-static Piece get_winning_piece(Board *b, Line wl) {
+char *get_line_text(Line l) {
+  switch (l) {
+    case TOP_ROW:
+      return "Top Row";
+    case MIDDLE_ROW:
+      return "Middle Row";
+    case BOTTOM_ROW:
+      return "Bottom Row";
+    case LEFT_COL:
+      return "Left Column";
+    case CENTER_COL:
+      return "Center Column";
+    case RIGHT_COL:
+      return "Right Column";
+    case BACKSLASH:
+      return "Backslash";
+    case FORWARD_SLASH:
+      return "Forward Slash";
+    case NO_WINNER:
+      return "No Winner";
+  }
+}
+
+Piece get_winning_piece(Board *b, Line wl) {
   Piece winner;
 
   switch (wl) {
@@ -371,6 +409,19 @@ static void update_game_state(Game *g) {
   }
 }
 
+void play_noui(Game *g) {
+  update_game_state(g);
+  print_board(g->board, "Initial");
+
+  int pos = get_next_move(g);
+  printf("requested pos: %d\n", pos);
+  Piece p = get_next_turn(g->board);
+  place_piece(g->board, pos, p);
+
+  update_game_state(g);
+  print_board(g->board, "MCTS");
+}
+
 void play(Game *g) {
   update_game_state(g);
   refresh_display(g);
@@ -411,7 +462,7 @@ void play(Game *g) {
 
     // AI logic
     if (g->state == GS_CPU_TURN) {
-      int cpuMove = next_move(g);
+      int cpuMove = get_next_move(g);
       place_piece(g->board, cpuMove, PIECE_O);
 
       update_game_state(g);

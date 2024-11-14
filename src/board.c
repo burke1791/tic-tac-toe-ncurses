@@ -61,7 +61,7 @@ void destroy_board(Board *b) {
   free(b);
 }
 
-static void reset_square(Square *s) {
+void reset_square(Square *s) {
   s->color = SQ_NONE;
   s->piece = PIECE_EMPTY;
 }
@@ -72,8 +72,17 @@ void reset_board(Board *b) {
   }
 }
 
+int num_empty_squares(Board *b) {
+  int count = 0;
+  for (int i = 0; i < 9; i++) {
+    if (b->squares[i]->piece == PIECE_EMPTY) count++;
+  }
+  return count;
+}
+
 static bool validate_new_piece(Board *b, int pos, Piece p) {
   // is the requested square occupied?
+  if (pos < 0 || pos > 8) return false;
   if (b->squares[pos]->piece != PIECE_EMPTY) return false;
 
   int numX = 0;
@@ -109,6 +118,21 @@ int get_board_pos_from_cursor(Board *b, Cursor *c) {
   }
 
   return -1;
+}
+
+char get_piece_char(Piece p) {
+  switch (p) {
+    case PIECE_EMPTY:
+      return ' ';
+    case PIECE_X:
+      return 'X';
+    case PIECE_O:
+      return 'O';
+  }
+}
+
+char get_piece_char_from_square(Square *s) {
+  return get_piece_char(s->piece);
 }
 
 void set_top_row_color(Board *b, SquareColor c) {

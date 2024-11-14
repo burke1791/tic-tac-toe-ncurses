@@ -34,17 +34,6 @@ void kill_display() {
   endwin();
 }
 
-static char get_piece_char(Square *s) {
-  switch (s->piece) {
-    case PIECE_EMPTY:
-      return ' ';
-    case PIECE_X:
-      return 'X';
-    case PIECE_O:
-      return 'O';
-  }
-}
-
 static bool is_cursor_on_square(Cursor *c, Square *s) {
   return c->loc->row == s->loc->row && c->loc->col == s->loc->col;
 }
@@ -67,7 +56,7 @@ static void paint_board(Board *b, Cursor *c) {
   // draw pieces
   for (int i = 0; i < 9; i++) {
     Square *s = b->squares[i];
-    char p = get_piece_char(s);
+    char p = get_piece_char_from_square(s);
     bool isCursor = is_cursor_on_square(c, s);
 
     if (s->color == SQ_RED) {
@@ -140,4 +129,14 @@ static void paint_menu(Game *g) {
     move(m->items[pos]->loc->row, m->items[pos]->loc->col);
     addch('>');
   }
+}
+
+void print_board(Board *b, const char *msg) {
+  printf("===== Tic Tac Toe =====\n");
+  printf("== State: %s\n\n", msg);
+  printf(" %c | %c | %c\n", get_piece_char_from_square(b->squares[0]), get_piece_char_from_square(b->squares[1]), get_piece_char_from_square(b->squares[2]));
+  printf("---|---|---\n");
+  printf(" %c | %c | %c\n", get_piece_char_from_square(b->squares[3]), get_piece_char_from_square(b->squares[4]), get_piece_char_from_square(b->squares[5]));
+  printf("---|---|---\n");
+  printf(" %c | %c | %c\n", get_piece_char_from_square(b->squares[6]), get_piece_char_from_square(b->squares[7]), get_piece_char_from_square(b->squares[8]));
 }
